@@ -21,7 +21,23 @@
                 <h1>Automatic Form Example</h1>
                 <h2>Schema generated form with two-way binding</h2>
             </header>
-            <section id="main">
+            <section class="main">
+                <div class="panel">
+                    <h1>New User</h1>
+                    <div id="main">
+                    </div>
+                    <div id="control">
+                        <button class="primary" data-control="add" data-click="add">Add User</button>
+                        <button data-control="reset" data-click="reset">Reset</button>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div id="users">
+                        <h1>Users</h1>
+                        <div id="userList" data-users="userList">
+                        </div>
+                    </div>
+                </div>
             </section>
         </article>
     </body>

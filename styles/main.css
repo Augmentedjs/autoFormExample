@@ -25,3 +25,20 @@ div#logo {
     opacity: 0.85;
     cursor: pointer;
 }
+
+label {
+    float: left;
+    display: block;
+    position: relative;
+    width: 100px;
+    margin: 0;
+}
+
+select {
+    color: rgba(0, 0, 0, 0.85);
+    display: block;
+    font-size: 10px;
+    font-weight: 300;
+    margin: 0 10px 25px 0;
+    padding-bottom: 1px;
+}
