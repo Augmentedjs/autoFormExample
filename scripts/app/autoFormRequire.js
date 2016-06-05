@@ -6,15 +6,14 @@ require.config({
 		"jquery": "lib/jquery.min",
 		"underscore": "lib/lodash.min",
 		"backbone": "lib/backbone-min",
-        "handlebars": "lib/handlebars.runtime.min",
 
         // hosted version
-		"augmented": "/augmented/scripts/core/augmented",
-        "augmentedPresentation": "/augmented/scripts/presentation/augmentedPresentation",
+		//"augmented": "/augmented/scripts/core/augmented",
+        //"augmentedPresentation": "/augmented/scripts/presentation/augmentedPresentation",
 
         // local version
-		//"augmented": "lib/augmented",
-        //"augmentedPresentation": "lib/augmentedPresentation"
+		"augmented": "lib/augmented",
+        "augmentedPresentation": "lib/augmentedPresentation"
 	},
     "shim": {
     }
@@ -41,7 +40,8 @@ require(["augmented", "augmentedPresentation"],
             },
             "ID" : {
                 "description": "The unique identifier for a user",
-                "type" : "integer"
+                "type" : "integer",
+                "minimum": 1
             },
             "Email" : {
                 "description": "The email of the user",

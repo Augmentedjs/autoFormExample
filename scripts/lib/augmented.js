@@ -3795,6 +3795,15 @@
          */
         isEmpty: function() {
             return (this.length === 0);
+        },
+        /**
+         * Collection.size - returns the size of the collection
+         * @method size
+         * @memberof Augmented.Collection
+         * @returns {number} returns the size of the collection
+         */
+        size: function() {
+            return this.length;
         }
     });
 

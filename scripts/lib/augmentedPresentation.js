@@ -2154,7 +2154,7 @@
         /**
          * Gets the height of the browser viewport
          * @method getViewportHeight
-         * @returns {Number} The height of the viewport
+         * @returns {number} The height of the viewport
          * @memberof Augmented.Presentation.Dom
          */
         getViewportHeight: function() {
@@ -2163,7 +2163,7 @@
         /**
          * Gets the width of the browser viewport
          * @method getViewportWidth
-         * @returns {Number} The width of the viewport
+         * @returns {number} The width of the viewport
          * @memberof Augmented.Presentation.Dom
          */
         getViewportWidth: function() {
@@ -2173,7 +2173,7 @@
          * Sets the value of an element<br/>
          * Will detect the correct method to do so by element type
          * @method setValue
-         * @param {Element} el Element or string of element selector
+         * @param {Node} el Element or string of element selector
          * @param {string} value Value to set (or HTML)
          * @param {boolean} onlyText Value will set as text only
          * @memberof Augmented.Presentation.Dom
@@ -2202,7 +2202,7 @@
          * Gets the value of an element<br/>
          * Will detect the correct method to do so by element type
          * @method getValue
-         * @param {Element} el Element or string of element selector
+         * @param {Node} el Element or string of element selector
          * @returns {string} Returns the value of the element (or HTML)
          * @memberof Augmented.Presentation.Dom
          */
@@ -2226,7 +2226,7 @@
          * Supports full query selection
          * @method selector
          * @param {string} query Element or string of element selector
-         * @returns {Element} Returns the element (or first of type)
+         * @returns {Node} Returns the element (or first of type)
          * @memberof Augmented.Presentation.Dom
          */
         selector: function(query) {
@@ -2250,9 +2250,30 @@
             return null;
         },
         /**
+         * Query function<br/>
+         * Supports full query selection but acts like jQuery
+         * @method query
+         * @param {string} query Element or string of element selector
+         * @param {Node} el Element to start from (optional)
+         * @returns {NodeList|Node} Returns all the nodes selected
+         * @memberof Augmented.Presentation.Dom
+         */
+        query: function(query, el) {
+            if (query) {
+                var d = (el) ? el : document;
+                var nodelist = Augmented.isString(query) ? d.querySelectorAll(query) : query;
+
+                if (nodelist.length === 1) {
+                    return nodelist[0];
+                }
+                return nodelist;
+            }
+            return null;
+        },
+        /**
          * Hides an element
          * @method hide
-         * @param {Element} el Element or string of element selector
+         * @param {Node} el Element or string of element selector
          * @memberof Augmented.Presentation.Dom
          */
         hide: function(el) {
@@ -2265,7 +2286,7 @@
         /**
          * Shows an element
          * @method show
-         * @param {Element} el Element or string of element selector
+         * @param {Node} el Element or string of element selector
          * @param {string} display Value to set for 'display' property (optional)
          * @memberof Augmented.Presentation.Dom
          */
@@ -2279,7 +2300,7 @@
         /**
          * Sets the class attribute (completely)
          * @method setClass
-         * @param {Element} el Element or string of element selector
+         * @param {Node} el Element or string of element selector
          * @param {string} cls the class value
          * @memberof Augmented.Presentation.Dom
          */
@@ -2292,7 +2313,7 @@
         /**
          * Adds a class attribute
          * @method addClass
-         * @param {Element} el Element or string of element selector
+         * @param {Node} el Element or string of element selector
          * @param {string} cls the class value
          * @memberof Augmented.Presentation.Dom
          */
@@ -2305,7 +2326,7 @@
         /**
          * Remove a class attribute
          * @method removeClass
-         * @param {Element} el Element or string of element selector
+         * @param {Node} el Element or string of element selector
          * @param {string} cls the class value
          * @memberof Augmented.Presentation.Dom
          */
@@ -2318,7 +2339,7 @@
         /**
          * Empty a element container
          * @method empty
-         * @param {Element} el Element or string of element selector
+         * @param {Node} el Element or string of element selector
          * @memberof Augmented.Presentation.Dom
          */
         empty: function(el) {
@@ -2328,7 +2349,7 @@
          * injectTemplate method - Injects a template element at a mount point
          * @method injectTemplate
          * @param {string} template The template selector
-         * @param {Element} mount The mount point as Document.Element or String
+         * @param {Node} mount The mount point as Document.Element or String
          * @memberof Augmented.Presentation.Dom
          */
         injectTemplate: function(template, mount) {
@@ -2341,13 +2362,18 @@
     };
 
     /**
-     * Augmented jQuery-like selectors usinge native selectors
+     * Augmented jQuery-like selectors usinge native selectors</br/>
+     * Will return a nodelist for all selections unless only one is found.
      * @method $
-     * @name $
      * @memberof Augmented
-     * @borrows Augmented.Presentation.Dom.selectors
+     * @borrows Augmented.Presentation.Dom.query
+     * @example
+     * $("#myElement");
+     * $("section#main header");
+     * - or start from Element:
+     * $("header", mainSectionEl);
      */
-    Augmented.$ = Augmented.Presentation.Dom.selectors;
+    Augmented.$ = Augmented.Presentation.Dom.query;
 
     /**
      * Widgets and small presentation modules
@@ -2358,13 +2384,24 @@
         /**
          * List widget - renders a standard list
          * @method List
+         * @param {string} id The id of the parent to attach the list
+         * @param {Object} data The data to render
          * @param {Array} data The data to render
+         * @param {string} binding The binding (used for decorator and optional)
          * @param {boolean} ordered True if the list should be ordered
          * @returns {Element} Returns a DOM element as a list
          * @memberof Augmented.Presentation.Widget
          */
-        List: function(data, ordered) {
+        List: function(id, data, ordered, binding) {
             var list = (ordered) ? document.createElement("ol") : document.createElement("ul"), i = 0, l, li, t, d;
+            if (id) {
+                list.setAttribute("id", id);
+            }
+
+            if (binding && id) {
+                list.setAttribute("data-" + binding, id);
+            }
+
             if (data && Array.isArray(data)) {
                 l = data.length;
                 for (i = 0; i < l; i++) {
@@ -2380,12 +2417,22 @@
         /**
          * DescriptionList widget - renders a description list
          * @method DescriptionList
+         * @param {string} id The id of the parent to attach the list
          * @param {Object} data The data to render
+         * @param {string} binding The binding (used for decorator and optional)
          * @returns {Element} Returns a DOM element as a description list
          * @memberof Augmented.Presentation.Widget
          */
-        DescriptionList: function(data) {
+        DescriptionList: function(id, data, binding) {
             var list = document.createElement("dl"), i = 0, l, dd, dt, t, keys, key;
+            if (id) {
+                list.setAttribute("id", id);
+            }
+
+            if (binding && id) {
+                list.setAttribute("data-" + binding, id);
+            }
+
             if (data && Augmented.isObject(data)) {
                 keys = Object.keys(data);
                 l = keys.length;
@@ -2409,12 +2456,20 @@
          * @method DataList
          * @param {string} id The id of the parent to attach the list
          * @param {Array} data The data to render
+         * @param {string} binding The binding (used for decorator and optional)
          * @returns {Element} Returns a DOM element as a data list
          * @memberof Augmented.Presentation.Widget
          */
-        DataList: function(id, data) {
+        DataList: function(id, data, binding) {
             var list = document.createElement("datalist"), i = 0, l, o;
-            list.setAttribute("id", id);
+            if (id) {
+                list.setAttribute("id", id);
+            }
+
+            if (binding && id) {
+                list.setAttribute("data-" + binding, id);
+            }
+
             if (data && Array.isArray(data)) {
                 l = data.length;
                 for (i = 0; i < l; i++) {
@@ -2424,7 +2479,116 @@
                 }
             }
             return list;
+        },
+        /**
+         * Input widget - renders an input or simular based on type
+         * @method Input
+         * @param {object} field Field property object (required)
+         * @param {string} name The name of the field
+         * @param {string} value The value to preset
+         * @param {string} id The id of the field
+         * @param {string} binding The binding (used for decorator and optional)
+         * @returns {Element} Returns a DOM element as an input
+         * @memberof Augmented.Presentation.Widget
+         */
+        Input: function(field, name, value, id, binding) {
+            if (!field) {
+                return null;
+            }
+            var input, dobj = ((value) ? value : ""), cobj = field, t = field.type;
+
+            if (t === "object") {
+                if (Array.isArray(dobj)) {
+                    var iii = 0, lll = dobj.length, option, tOption;
+                    input = document.createElement("select");
+                    for (iii = 0; iii < lll; iii++) {
+                        option = document.createElement("option");
+                        option.setAttribute("value", dobj[iii]);
+                        tOption = document.createTextNode(dobj[iii]);
+                        option.appendChild(tOption);
+                        input.appendChild(option);
+                    }
+                } else {
+                    input = document.createElement("textarea");
+                    input.value = JSON.stringify(dobj);
+                }
+            } else if (t === "boolean") {
+                input = document.createElement("input");
+                input.setAttribute("type", "checkbox");
+                if (dobj === true) {
+                    input.setAttribute("checked", "checked");
+                }
+                input.value = dobj;
+            } else if (t === "number" || t === "integer") {
+                input = document.createElement("input");
+                input.setAttribute("type", "number");
+                input.value = dobj;
+            } else if (t === "string" && cobj.enum) {
+                input = document.createElement("select");
+                var iiii = 0, llll = cobj.enum.length, option2, tOption2;
+                for (iiii = 0; iiii < llll; iiii++) {
+                    option2 = document.createElement("option");
+                    option2.setAttribute("value", cobj.enum[iiii]);
+                    tOption2 = document.createTextNode(cobj.enum[iiii]);
+                    if (dobj === cobj.enum[iiii]) {
+                        option2.setAttribute("selected", "selected");
+                    }
+                    option2.appendChild(tOption2);
+                    input.appendChild(option2);
+                }
+            } else if (t === "string" && (cobj.format === "email")) {
+                input = document.createElement("input");
+                input.setAttribute("type", "email");
+                input.value = dobj;
+            } else if (t === "string" && (cobj.format === "uri")) {
+                input = document.createElement("input");
+                input.setAttribute("type", "url");
+                input.value = dobj;
+            } else if (t === "string" && (cobj.format === "date-time")) {
+                input = document.createElement("input");
+                input.setAttribute("type", "datetime");
+                input.value = dobj;
+            } else {
+                input = document.createElement("input");
+                input.setAttribute("type", "text");
+                input.value = dobj;
+            }
+
+            if (t === "string" && cobj.pattern) {
+                input.setAttribute("pattern", cobj.pattern);
+            }
+
+            if (cobj.minimum) {
+                input.setAttribute("min", cobj.minimum);
+            }
+
+            if (cobj.maximum) {
+                input.setAttribute("max", cobj.maximum);
+            }
+
+            if (t === "string" && cobj.minlength) {
+                input.setAttribute("minlength", cobj.minlength);
+            }
+
+            if (t === "string" && cobj.maxlength) {
+                input.setAttribute("maxlength", cobj.maxlength);
+            }
+
+            if (name) {
+                input.setAttribute("name", name);
+            }
+
+            if (id) {
+                input.setAttribute("id", id);
+            }
+
+            if (binding && name) {
+                input.setAttribute("data-" + binding, name);
+            }
+
+            return input;
         }
+
     };
 
     var decoratorAttributeEnum = {
@@ -2642,6 +2806,24 @@
             }
         },
         /**
+         * syncAllBoundElements - Syncs the data of all bound elements by firing a change events
+         * @method syncAllBoundElements
+         * @memberof Augmented.Presentation.DecoratorView
+         */
+        syncAllBoundElements: function() {
+            var elements = this.el.querySelectorAll("[" + this.bindingAttribute() + "]");
+            if (elements && elements.length > 0) {
+                var i = 0, l = elements.length, event = new UIEvent("change", {
+                    "view": window,
+                    "bubbles": true,
+                    "cancelable": true
+                });
+                for (i = 0; i < l; i++) {
+                    elements[i].dispatchEvent(event);
+                }
+            }
+        },
+        /**
          * addClass - adds a class to a bount element
          * @method addClass
          * @param {string} id The identifier (not id attribute) of the element
@@ -2723,15 +2905,15 @@
                     aEach = appendTemplateEach ? appendTemplateEach : null;*/
 
                     if (renderStyle === "list" || renderStyle === "unordered-list") {
-                        ee = Augmented.Presentation.Widget.List(d, false);
+                        ee = Augmented.Presentation.Widget.List(null, d, false);
                         Augmented.Presentation.Dom.empty(e);
                         e.appendChild(ee);
                     } else if (renderStyle === "ordered-list") {
-                        ee = Augmented.Presentation.Widget.List(d, true);
+                        ee = Augmented.Presentation.Widget.List(null, d, true);
                         Augmented.Presentation.Dom.empty(e);
                         e.appendChild(ee);
                     } else if (renderStyle === "description-list") {
-                        ee = Augmented.Presentation.Widget.DescriptionList(d);
+                        ee = Augmented.Presentation.Widget.DescriptionList(null, d);
                         Augmented.Presentation.Dom.empty(e);
                         e.appendChild(ee);
                     }
@@ -2974,22 +3156,45 @@
         style: "alert"
     });
 
+    var formCompile = function(e, name, description, fields, model, binding) {
+        var form = document.createElement("form"), fs = document.createElement("formset"), t, i, keys = Object.keys(fields), l = keys.length, input, lb;
+        form.appendChild(fs);
 
+        if (name) {
+            var lg = document.createElement("legend");
+            t = document.createTextNode(name);
+            if (description) {
+                var att = document.createAttribute("title");
+                att.value = description;
+                lg.setAttributeNode(att);
+            }
+            lg.appendChild(t);
+            fs.appendChild(lg);
+        }
 
-    var formCompile = function(e, name, description, fields, model) {
-        var fs = document.createElement("formset");
-        
+        for (i = 0; i < l; i++) {
+            lb = document.createElement("label");
+            lb.setAttribute("for", keys[i]);
+            t = document.createTextNode(keys[i]);
+            lb.appendChild(t);
+            fs.appendChild(lb);
 
-        e.appendChild(fs);
+            input = Augmented.Presentation.Widget.Input(fields[keys[i]], keys[i], model[keys[i]], keys[i], binding);
+            if (input) {
+                fs.appendChild(input);
+            }
+        }
+
+        e.appendChild(form);
     };
 
     /**
      * A automatic form view created from a JSON Schema
      * @constructor Augmented.Presentation.AutomaticForm
      * @memberof Augmented.Presentation
-     * @extends Augmented.Presentation.Colleague
+     * @extends Augmented.Presentation.DecoratorView
      */
-    Augmented.Presentation.AutomaticForm = Augmented.Presentation.Colleague.extend({
+    Augmented.Presentation.AutomaticForm = Augmented.Presentation.DecoratorView.extend({
         // standard functionality
 
         /**
@@ -3049,6 +3254,8 @@
 
             if (this.model) {
                 this.model.clear();
+            } else {
+                this.model = new Augmented.Model();
             }
             if (options) {
                 if (options.schema) {
@@ -3093,7 +3300,7 @@
                 this.model.crossOrigin = this.crossOrigin;
             }
             if (this.schema) {
-                if (this.schema.title) {
+                if (this.schema.title && (!this.name)) {
                     this.name = this.schema.title;
                 }
                 if (this.schema.description) {
@@ -3270,7 +3477,9 @@
                         e.appendChild(n);
 
                         // the form
-                        formCompile(e, this.name, this.description, this._fields, this.model.toJSON());
+                        formCompile(e, this.name, this.description, this._fields, this.model.toJSON(), this.name);
+
+                        this._formEl = Augmented.Presentation.Dom.query("form", this.el);
 
                         // message
                         n = document.createElement("p");
@@ -3278,27 +3487,23 @@
                         e.appendChild(n);
                     }
                 } else if (this.$el) {
-                    logger.warn("AUGMENTED: AutoTable doesn't support jquery, sorry, not rendering.");
+                    logger.warn("AUGMENTED: AutoForm doesn't support jquery, sorry, not rendering.");
                 } else {
-                    logger.warn("AUGMENTED: AutoTable no element anchor, not rendering.");
-                }
-
-                if (this.renderPaginationControl) {
-                    this.bindPaginationControlEvents();
+                    logger.warn("AUGMENTED: AutoForm no element anchor, not rendering.");
                 }
              }
              this.delegateEvents();
 
-             if (this.sortable) {
-                 this.bindSortableColumnEvents();
-             }
-
-             if (this.editable) {
-                 this.bindCellChangeEvents();
-             }
+             this.syncAllBoundElements();
 
              this.showProgressBar(false);
              return this;
+         },
+         reset: function() {
+            if (this._formEl) {
+                this._formEl.reset();
+                this.model.reset();
+            }
          }
     });
 
