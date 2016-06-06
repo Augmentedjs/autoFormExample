@@ -8,12 +8,12 @@ require.config({
 		"backbone": "lib/backbone-min",
 
         // hosted version
-		//"augmented": "/augmented/scripts/core/augmented",
-        //"augmentedPresentation": "/augmented/scripts/presentation/augmentedPresentation",
+		"augmented": "/augmented/scripts/core/augmented",
+        "augmentedPresentation": "/augmented/scripts/presentation/augmentedPresentation",
 
         // local version
-		"augmented": "lib/augmented",
-        "augmentedPresentation": "lib/augmentedPresentation"
+		//"augmented": "lib/augmented",
+        //"augmentedPresentation": "lib/augmentedPresentation"
 	},
     "shim": {
     }
@@ -79,12 +79,10 @@ require(["augmented", "augmentedPresentation"],
         el: "#mediator",
         init: function(options) {
             this.on("add", function() {
-                //this.publish("userlist", "add", model);
                 this.publish("form", "publishData");
             });
 
             this.on("reset", function() {
-                //this.publish("userlist", "add", model);
                 this.publish("form", "reset");
             });
 
