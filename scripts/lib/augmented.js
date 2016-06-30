@@ -12,8 +12,7 @@
 
     // Set up Augmented appropriately for the environment. Start with AMD.
     if (typeof define === 'function' && define.amd) {
-        define([ 'backbone', 'exports'],
-		function(Backbone, exports) {
+        define([ 'backbone', 'exports'], function(Backbone, exports) {
 	    // Export global even in AMD case in case this script is
 	    // loaded with
 	    // others that may still expect a global Augmented.
@@ -22,9 +21,8 @@
 
 	// Next for Node.js or CommonJS.
     } else if (typeof exports !== 'undefined') {
-	    var _ = require('backbone');
-	factory(root, exports, Backbone);
-
+	    var Backbone = require('backbone');
+	    factory(root, exports, Backbone);
 	// Finally, as a browser global.
     } else {
 	    root.Augmented = factory(root, {}, root.Backbone);
@@ -256,11 +254,45 @@
         return Augmented.isFunction(value) ? value.call(object) : value;
     };
 
-    // Polyfill for ES6 function
+    // Polyfills for ES6 functions
     if (!Number.isInteger) {
         Number.isInteger = function(value) {
             return typeof value === "number" && isFinite(value) && Math.floor(value) === value;
         };
+    }
+
+    if (!Array.prototype.find) {
+        /**
+         * The find() method returns a value in the array, if an element in the array satisfies the provided testing function. Otherwise undefined is returned.
+         * <em>ES6 Polyfill</em>
+         * @function Array.find
+         * @memberof Array
+         * @param {object} predicate Function to execute on each value in the array, taking three arguments:
+         * @param {object++} args Optional. Object to use as this when executing callback.
+         * @returns Returns value in the array
+         * @example arr.find(callback[, thisArg]);
+         * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find#Polyfill
+         */
+      Array.prototype.find = function(predicate) {
+        if (this === null) {
+          throw new TypeError('Array.prototype.find called on null or undefined');
+        }
+        if (typeof predicate !== 'function') {
+          throw new TypeError('predicate must be a function');
+        }
+        var list = Object(this);
+        var length = list.length >>> 0;
+        var thisArg = arguments[1];
+        var value;
+
+        for (var i = 0; i < length; i++) {
+          value = list[i];
+          if (predicate.call(thisArg, value, i, list)) {
+            return value;
+          }
+        }
+        return undefined;
+      };
     }
 
     if (!Array.prototype.includes) {
@@ -385,30 +417,30 @@
 
     /**
      * Performs a binary search on the host array. vs indexOf<br/>
-     * Binary Search is a complexity of <em>O(log n)</em> vs <em>O(n)</em> with indexOf
+     * Binary Search is a complexity of <em>O(n log n)</em> vs <em>O(n)</em> with indexOf
      * @constructor Augmented.Utility.BinarySearch
      * @memberof Augmented.Utility
-     * @param {Array} items The array.
-     * @param {Any} value The item to search for within the array.
+     * @param {Array} arr The array.
+     * @param {Any} find The item to search for within the array.
+     * @param {function} comparator The comparator to use
      * @returns {Number} The index of the element which defaults to -1 when not found.
      */
-    Augmented.Utility.BinarySearch = function(items, value){
-        var startIndex  = 0,
-            stopIndex   = items.length - 1,
-            middle      = Math.floor((stopIndex + startIndex)/2);
+    Augmented.Utility.BinarySearch = function(arr, find, comparator) {
+        var low = 0, high = arr.length - 1,
+            i, comparison;
 
-        while(items[middle] != value && startIndex < stopIndex){
-            //adjust search area
-            if (value < items[middle]){
-                stopIndex = middle - 1;
-            } else if (value > items[middle]){
-                startIndex = middle + 1;
+        while (low <= high) {
+            i = Math.floor((low + high) / 2);
+            comparison = comparator(arr[i], find);
+            if (comparison < 0) {
+                low = i + 1; continue;
             }
-            //recalculate middle
-            middle = Math.floor((stopIndex + startIndex)/2);
+            if (comparison > 0) {
+                high = i - 1; continue;
+            }
+            return i;
         }
-        //make sure it's the right value
-        return (items[middle] != value) ? -1 : middle;
+        return null;
     };
 
     /**
@@ -425,9 +457,10 @@
         }
         var left = [];
         var right = [];
+        var i = 1, l = arr.length;
         var pivot = arr[0];
         //go through each element in array
-        for (var i = 1; i < arr.length; i++) {
+        for (i = 1; i < l; i++) {
             if (arr[i] < pivot) {
                 left.push(arr[i]);
             } else {
@@ -570,7 +603,7 @@
     /*
      * Setup the rest of jQuery-like eventing and handlers for native xhr
      */
-    var aXHR = XMLHttpRequest;
+    var aXHR = (XMLHttpRequest) ? XMLHttpRequest : {};
     Augmented.Utility.extend(aXHR, {
         done: function() {},
         fail: function() {},
@@ -772,7 +805,7 @@
      *     });
      */
     Augmented.ajax = Augmented.Ajax.ajax = function(ajaxObject) {
-        logger.debug("AUGMENTED: Ajax object: " + JSON.stringify(ajaxObject));
+        //logger.debug("AUGMENTED: Ajax object: " + JSON.stringify(ajaxObject));
         var xhr = null;
   		if (ajaxObject && ajaxObject.url) {
     	    var method = (ajaxObject.method) ? ajaxObject.method : 'GET';
@@ -854,10 +887,10 @@
                                 }
                             } else if (xhr.responseType === "json") {
                                 if (xhr.response) {
-                                    logger.debug("AUGMENTED: Ajax (JSON responseType) native JSON.");
+                                    //logger.debug("AUGMENTED: Ajax (JSON responseType) native JSON.");
                                     ajaxObject.success(xhr.response, xhr.status, xhr);
                                 } else if (xhr.responseText) {
-                                    logger.debug("AUGMENTED: Ajax (JSON responseType) parsed JSON from string.");
+                                    //logger.debug("AUGMENTED: Ajax (JSON responseType) parsed JSON from string.");
                                     ajaxObject.success(JSON.parse(xhr.responseText), xhr.status, xhr);
                                 } else {
                                     logger.warn("AUGMENTED: Ajax (" + xhr.responseType + " responseType) did not return anything.");
@@ -3710,7 +3743,7 @@
                 this.validationMessages.valid = true;
 
                 var a = this.toJSON(), i = 0, l = a.length;
-                logger.debug("AUGMENTED: Collection Validate: Beginning with " + l + " models.");
+                //logger.debug("AUGMENTED: Collection Validate: Beginning with " + l + " models.");
                 for (i = 0; i < l; i++) {
                     messages[i] = Augmented.ValidationFramework.validate(a[i], this.schema);
                     if (!messages[i].valid) {
@@ -3718,7 +3751,7 @@
                     }
                 }
 
-                logger.debug("AUGMENTED: Collection Validate: Completed isValid " + this.validationMessages.valid);
+                //logger.debug("AUGMENTED: Collection Validate: Completed isValid " + this.validationMessages.valid);
     	    } else {
     		    this.validationMessages.valid = true;
     	    }
@@ -4308,7 +4341,7 @@
 
     	// true = localStorage, false = sessionStorage
     	if (this.isSupported()) {
-    	    logger.debug("AUGMENTED: localStorage exists");
+    	    //logger.debug("AUGMENTED: localStorage exists");
 
     	    if (this.isPersisted) {
     		this.myStore = localStorage;
